@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class ClientHandler {
@@ -30,7 +32,11 @@ public class ClientHandler {
             this.outputStream = new DataOutputStream(socket.getOutputStream());
             this.name = "";
             this.authorized = false;
-            new Thread(() -> {
+
+
+            //Реализуем ExecutorService
+            ExecutorService service = Executors.newFixedThreadPool(10);
+            service.submit(() -> {
                 try {
                     authentication();
                     readMessages();
@@ -39,7 +45,9 @@ public class ClientHandler {
                 } finally {
                     closeConnection();
                 }
-            }).start();
+            });
+            service.shutdown();
+
         } catch (IOException ex) {
             System.out.println("Problem with client creating");
         }
